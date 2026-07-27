@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Rekap Nilai & Absensi SMK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-hover: #d97706;
+            --pastel-bg: #fffbf0;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #f1ebd9;
+        }
+
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { margin: 0; padding: 24px; background-color: var(--pastel-bg); color: var(--text-main); }
+        
+        .header-panel {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            color: #78350f;
+            padding: 24px 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(251, 191, 36, 0.15);
+            margin-bottom: 24px;
+            border: 1px solid #fde68a;
+        }
+
+        .header-panel h2 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #78350f;
+        }
+
+        .header-panel p {
+            margin: 0;
+            font-size: 13px;
+            color: #92400e;
+        }
+
+        .filter-card {
+            background: var(--card-bg);
+            padding: 20px 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group { display: flex; flex-direction: column; gap: 6px; }
+        .filter-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        select, input {
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #fafaf9;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            outline: none;
+            font-weight: 500;
+        }
+
+        select:focus, input:focus {
+            border-color: #f59e0b;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
+        }
+
+        .input-score { width: 55px; text-align: center; padding: 6px; font-size: 13px; background: #fff; }
+        
+        .nav-tabs {
+            display: flex;
+            background-color: #fef3c7;
+            padding: 6px;
+            border-radius: 16px 16px 0 0;
+            gap: 6px;
+            border: 1px solid #fde68a;
+            border-bottom: none;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            color: #92400e;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover { color: #78350f; background: rgba(255,255,255,0.6); }
+        .tab-btn.active { background-color: var(--card-bg); color: #b45309; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+
+        .tab-content {
+            background: var(--card-bg);
+            padding: 28px;
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .tab-content.active { display: block; }
+
+        .beranda-hero {
+            background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+            border: 1px solid #f5d0fe;
+            padding: 20px 24px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+        }
+
+        .beranda-hero h3 { margin: 0 0 6px 0; color: #86198f; font-size: 17px; font-weight: 800; }
+        .beranda-hero p { margin: 0; color: #a21caf; font-size: 13px; }
+
+        .table-wrapper {
+            max-height: 55vh;
+            overflow: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-top: 16px;
+            background: #fff;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+        th, td { border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 10px 12px; text-align: center; }
+        
+        th { 
+            background-color: #fafaf9; 
+            color: #475569; 
+            font-weight: 700;
+            white-space: nowrap; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        button {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3); }
+
+        .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+
+        .btn-warning { background-color: #fbbf24; color: #78350f; padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; }
+        .btn-warning:hover { background-color: #f59e0b; color: #fff; }
+
+        .btn-danger { background-color: #fda4af; color: #9f1239; padding: 6px 12px; font-size: 11px; font-weight: 600; border-radius: 6px; }
+        .btn-danger:hover { background-color: #f43f5e; color: #fff; }
+
+        .btn-secondary { background-color: #e2e8f0; color: #475569; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); }
+        .btn-secondary:hover { background-color: #cbd5e1; color: #1e293b; transform: translateY(-1px); }
+
+        .add-student-box {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: #fffbeb;
+            padding: 18px;
+            border-radius: 12px;
+            border: 2px dashed #fde68a;
+            align-items: center;
+        }
+
+        .sub-filter-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #f0fdf4;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 5px solid #34d399;
+            border: 1px solid #a7f3d0;
+        }
+
+        .text-left { text-align: left; white-space: nowrap; }
+        
+        .bg-final { background-color: #eff6ff; font-weight: 700; color: #1e40af; }
+        .bg-final-2 { background-color: #f0fdf4; font-weight: 700; color: #166534; }
+        .bg-absen { background-color: #fefce8; color: #854d0e; }
+
+        .box-input-absen {
+            width: 32px !important;
+            height: 32px !important;
+            padding: 0 !important;
+            font-size: 12px !important;
+            font-weight: 800 !important;
+            border-radius: 8px !important;
+            text-align: center !important;
+            border: 1.5px solid #e2e8f0 !important;
+            text-transform: uppercase !important;
+            outline: none !important;
+        }
+
+        .color-H { background-color: #dcfce7 !important; color: #166534 !important; border-color: #4ade80 !important; }
+        .color-I { background-color: #dbeafe !important; color: #1e40af !important; border-color: #60a5fa !important; }
+        .color-S { background-color: #fef9c3 !important; color: #854d0e !important; border-color: #facc15 !important; }
+        .color-A { background-color: #fee2e2 !important; color: #991b1b !important; border-color: #f87171 !important; }
+
+        .legend-box { display: inline-flex; gap: 10px; margin-left: 10px; font-size: 12px; }
+        .badge-lg { padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; }
+        .badge-H { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-I { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .badge-S { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+        .badge-A { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .bottom-action-panel {
+            background: var(--card-bg);
+            padding: 18px 28px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+            margin-top: 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 14px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Toast Notification Styling */
+        #toastNotif {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #10b981;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 14px 22px;
+            position: fixed;
+            z-index: 9999;
+            right: 30px;
+            bottom: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        #toastNotif.show {
+            visibility: visible;
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notification Box -->
+    <div id="toastNotif">Pesan Berhasil</div>
+
+    <div class="header-panel">
+        <h2>Sistem Pengelolaan Nilai & Absensi Siswa</h2>
+        <p>Kelola presensi harian, nilai tugas, dan rekap rapot siswa secara terintegrasi.</p>
+    </div>
+
+    <!-- Panel Filter Kelas & Mapel -->
+    <div class="filter-card">
+        <div class="filter-group">
+            <label>Pilih Kelas:</label>
+            <select id="selectKelas" onchange="handleKelasChange()">
+                <option value="">-- Pilih Kelas --</option>
+                <option value="X MP 1">X MP 1</option>
+                <option value="X MP 2">X MP 2</option>
+                <option value="X MP 3">X MP 3</option>
+                <option value="X MP 4">X MP 4</option>
+                <option value="X MP 5">X MP 5</option>
+                <option value="X PM 1">X PM 1</option>
+                <option value="X PM 2">X PM 2</option>
+                <option value="X PM 3">X PM 3</option>
+                <option value="X PM 4">X PM 4</option>
+                <option value="X PM 5">X PM 5</option>
+                <option value="X DKV 1">X DKV 1</option>
+                <option value="X DKV 2">X DKV 2</option>
+                <option value="X DKV 3">X DKV 3</option>
+                <option value="X FKK 1">X FKK 1</option>
+                <option value="X FKK 2">X FKK 2</option>
+                <option value="X AKC 1">X AKC 1</option>
+                <option value="X AKC 2">X AKC 2</option>
+                <option value="X AKL 1">X AKL 1</option>
+                <option value="X AKL 2">X AKL 2</option>
+            </select>
+        </div>
+
+        <div class="filter-group" id="groupMapel" style="display: none;">
+            <label>Mata Pelajaran:</label>
+            <select id="selectMapel" onchange="muatDataSiswa()">
+                <option value="Coding">Coding</option>
+                <option value="TIK">TIK</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button id="btnTabBeranda" class="tab-btn active" onclick="openTab('Beranda')">Beranda Utama</button>
+        <button id="btnTabAbsen" class="tab-btn" onclick="openTab('Absen')">Absensi Harian</button>
+        <button id="btnTabNilaiHarian" class="tab-btn" onclick="openTab('NilaiHarian')">Nilai Harian</button>
+        <button id="btnTabNilaiUlangan" class="tab-btn" onclick="openTab('NilaiUlangan')">Nilai Ulangan</button>
+    </div>
+
+    <!-- TAB 1: BERANDA -->
+    <div id="Beranda" class="tab-content active">
+        <div class="beranda-hero">
+            <h3>Dashboard Rekapitulasi Akademik</h3>
+            <p id="infoKelasAktif">Silakan pilih kelas pada panel di atas untuk mulai menampilkan data rekap siswa.</p>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 12px;">
+            <div class="filter-group">
+                <select id="selectSemesterBeranda" onchange="muatDataSiswa()" style="padding: 6px 12px; font-size: 12px;">
+                    <option value="1">Semester 1 (Juli - Des)</option>
+                    <option value="2">Semester 2 (Jan - Juni)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2">No</th>
+                        <th rowspan="2">Nama Siswa</th>
+                        <th rowspan="2">Kelas</th>
+                        <th rowspan="2">Mapel</th>
+                        <th rowspan="2">Semester</th>
+                        <th colspan="3" class="bg-absen">Total Absensi</th>
+                        <th rowspan="2">Kehadiran (%)</th>
+                        <th colspan="2" class="bg-final">Nilai Harian</th>
+                        <th colspan="2" class="bg-final-2">Nilai Ulangan</th>
+                        <th rowspan="2">Nilai Rapot</th>
+                    </tr>
+                    <tr>
+                        <th class="bg-absen">Izin</th>
+                        <th class="bg-absen">Sakit</th>
+                        <th class="bg-absen">Alpha</th>
+                        <th class="bg-final">Final 1 (H1-H7)</th>
+                        <th class="bg-final">Final 2 (H8-H15)</th>
+                        <th class="bg-final-2">Final 1 (U1-U2)</th>
+                        <th class="bg-final-2">Final 2 (U3-U4)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyBeranda"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: ABSEN HARIAN -->
+    <div id="Absen" class="tab-content">
+        <div class="sub-filter-box">
+            <div class="filter-group">
+                <label>Pilih Semester:</label>
+                <select id="selectSemesterAbsen" onchange="updateDropdownBulan(); muatDataSiswa();">
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Pilih Bulan:</label>
+                <select id="selectBulanAbsen" onchange="muatDataSiswa()"></select>
+            </div>
+        </div>
+
+        <div class="add-student-box">
+            <strong style="font-size: 13px; color: #9a3412;">Tambah Siswa Baru:</strong>
+            <input type="text" id="inputNamaSiswaBaru" placeholder="Masukkan nama lengkap siswa..." style="flex: 1; background: #fff;">
+            <button class="btn-primary" onclick="tambahSiswaBaru()">Tambah Siswa</button>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h3 style="margin:0; font-size:15px; color:#334155;">Presensi Siswa Harian</h3>
+            <div class="legend-box">
+                <span class="badge-lg badge-H">H: Hadir</span>
+                <span class="badge-lg badge-I">I: Izin</span>
+                <span class="badge-lg badge-S">S: Sakit</span>
+                <span class="badge-lg badge-A">A: Alpha</span>
+            </div>
+        </div>
+        
+        <div class="table-wrapper">
+            <table>
+                <thead id="theadAbsen"></thead>
+                <tbody id="tbodyAbsen"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: NILAI HARIAN -->
+    <div id="NilaiHarian" class="tab-content">
+        <div class="sub-filter-box">
+            <div class="filter-group">
+                <label>Pilih Semester:</label>
+                <select id="selectSemesterTugas" onchange="muatDataSiswa()">
+                    <option value="1">Semester 1 (Juli - Des)</option>
+                    <option value="2">Semester 2 (Jan - Juni)</option>
+                </select>
+            </div>
+        </div>
+        <h3 style="margin: 0 0 12px 0; font-size: 15px; color:#334155;">Input 15 Nilai Harian & 2 Nilai Final</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Siswa</th>
+                        <th>H1</th><th>H2</th><th>H3</th><th>H4</th><th>H5</th><th>H6</th><th>H7</th>
+                        <th class="bg-final">Final 1 (H1-H7)</th>
+                        <th>H8</th><th>H9</th><th>H10</th><th>H11</th><th>H12</th><th>H13</th><th>H14</th><th>H15</th>
+                        <th class="bg-final-2">Final 2 (H8-H15)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyTugas"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 4: NILAI ULANGAN -->
+    <div id="NilaiUlangan" class="tab-content">
+        <div class="sub-filter-box">
+            <div class="filter-group">
+                <label>Pilih Semester:</label>
+                <select id="selectSemesterUlangan" onchange="muatDataSiswa()">
+                    <option value="1">Semester 1 (Juli - Des)</option>
+                    <option value="2">Semester 2 (Jan - Juni)</option>
+                </select>
+            </div>
+        </div>
+        <h3 style="margin: 0 0 12px 0; font-size: 15px; color:#334155;">Input 4 Nilai Ulangan & 2 Nilai Final</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Siswa</th>
+                        <th>Ulangan 1</th>
+                        <th>Ulangan 2</th>
+                        <th class="bg-final">Final 1</th>
+                        <th>Ulangan 3</th>
+                        <th>Ulangan 4</th>
+                        <th class="bg-final-2">Final 2</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyUlangan"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bottom-action-panel">
+        <button class="btn-secondary" onclick="resetDataAktif()">Reset Data Kelas Ini</button>
+        <button class="btn-primary" onclick="simpanSemuaData()">Simpan Semua Data</button>
+        <button class="btn-success" onclick="exportToExcel()">Download File Excel (.csv)</button>
+    </div>
+
+    <script>
+        const initialMasterSiswa = [{"nama": "Aisyah Fidelia Disastro", "kelas": "X AKC 1"}, {"nama": "Akbar Nugraha Suny", "kelas": "X AKC 1"}, {"nama": "Alfiana Natasya Putri", "kelas": "X AKC 1"}, {"nama": "Amanda Safitri", "kelas": "X AKC 1"}, {"nama": "Amelia Putri Sutarto", "kelas": "X AKC 1"}, {"nama": "Anindya Ganesa Harmusial", "kelas": "X AKC 1"}, {"nama": "Eza Azahra", "kelas": "X AKC 1"}, {"nama": "Givsi Sava Velisa", "kelas": "X AKC 1"}, {"nama": "Hana Kamilia", "kelas": "X AKC 1"}, {"nama": "Jelita Nurziihan Safitri", "kelas": "X AKC 1"}, {"nama": "Kay Azkia", "kelas": "X AKC 1"}, {"nama": "Maura Kasih Aulia", "kelas": "X AKC 1"}, {"nama": "Milan Nafadla", "kelas": "X AKC 1"}, {"nama": "Nahda Aulia Wardani", "kelas": "X AKC 1"}, {"nama": "Novi Tri Pitria", "kelas": "X AKC 1"}, {"nama": "Rachael Zahra Angkna", "kelas": "X AKC 1"}, {"nama": "Rhaisya Joiceva Alwany", "kelas": "X AKC 1"}, {"nama": "Ririn Airin Hikmah", "kelas": "X AKC 1"}, {"nama": "Risma Maulani", "kelas": "X AKC 1"}, {"nama": "Siti Al-mira Maharani", "kelas": "X AKC 1"}, {"nama": "Siti Nina Haryani", "kelas": "X AKC 1"}, {"nama": "Sukmayanti Melani Putri", "kelas": "X AKC 1"}, {"nama": "Syakira Mahdiah", "kelas": "X AKC 1"}, {"nama": "Tania Azzahra", "kelas": "X AKC 1"}, {"nama": "Ummu Habibah", "kelas": "X AKC 1"}, {"nama": "Venita Az Zahra", "kelas": "X AKC 1"}, {"nama": "Vino Rafa Adriyansyah", "kelas": "X AKC 1"}, {"nama": "Zidan Yoga Pratama", "kelas": "X AKC 1"}, {"nama": "Annisa Fawas Adillah", "kelas": "X AKC 2"}, {"nama": "Bintang Cahaya Ningtias", "kelas": "X AKC 2"}, {"nama": "Cahya Aurelea Dianty", "kelas": "X AKC 2"}, {"nama": "Emeninta Sinuhaji", "kelas": "X AKC 2"}, {"nama": "Gendis Meirizkiella Putri Nagavin", "kelas": "X AKC 2"}, {"nama": "Gita Eveline Purwadiyanto", "kelas": "X AKC 2"}, {"nama": "Jesicha Kumala", "kelas": "X AKC 2"}, {"nama": "Kanaya Ghaisani Arifah", "kelas": "X AKC 2"}, {"nama": "Kirana Shofiatul Millah", "kelas": "X AKC 2"}, {"nama": "Kirani Hayfa Salsabila", "kelas": "X AKC 2"}, {"nama": "Kirania Syabilla Putri", "kelas": "X AKC 2"}, {"nama": "Lafina Dwi Putri", "kelas": "X AKC 2"}, {"nama": "Michella Gabriele", "kelas": "X AKC 2"}, {"nama": "Morena Aprillea Sholsabila", "kelas": "X AKC 2"}, {"nama": "Najwaa Ashiilah Ridwan", "kelas": "X AKC 2"}, {"nama": "Naylatusi Fatia Sarafah", "kelas": "X AKC 2"}, {"nama": "Nazwa Dwi Fazrya", "kelas": "X AKC 2"}, {"nama": "Putri Azzizah Papulele", "kelas": "X AKC 2"}, {"nama": "Putri Cahya Lukman", "kelas": "X AKC 2"}, {"nama": "Putri Haifa Hurin", "kelas": "X AKC 2"}, {"nama": "Rahayu Aprilia", "kelas": "X AKC 2"}, {"nama": "Rahma Arifin", "kelas": "X AKC 2"}, {"nama": "Shafa Sri Ramadani", "kelas": "X AKC 2"}, {"nama": "Shifa Sri Ramadani", "kelas": "X AKC 2"}, {"nama": "Syarlifah Annur Fajri", "kelas": "X AKC 2"}, {"nama": "Thalita Safitri M", "kelas": "X AKC 2"}, {"nama": "Vidia Ayuningtyas", "kelas": "X AKC 2"}, {"nama": "Vinata Asta Pangukir", "kelas": "X AKC 2"}, {"nama": "Zilvi Anandy Syah", "kelas": "X AKC 2"}, {"nama": "Cahyani Susati", "kelas": "X AKL 1"}, {"nama": "Esther Quenisha Cheryl", "kelas": "X AKL 1"}, {"nama": "Hazima Hasibuan", "kelas": "X AKL 1"}, {"nama": "Keyla Pebrina Putri Supriadi", "kelas": "X AKL 1"}, {"nama": "Naura Sabitha Yuna", "kelas": "X AKL 1"}, {"nama": "Non", "kelas": "X AKL 1"}, {"nama": "Nur Suci Rahma Wati", "kelas": "X AKL 1"}, {"nama": "Siti Nur Azizah", "kelas": "X AKL 1"}, {"nama": "Adelia Elysia Hasna", "kelas": "X AKL 2"}, {"nama": "Al Rafqi Wibowo", "kelas": "X AKL 2"}, {"nama": "Aprylia Nur Herawati", "kelas": "X AKL 2"}, {"nama": "Clarissa Putri Bangkit", "kelas": "X AKL 2"}, {"nama": "Cleva Aqila Mustakim", "kelas": "X AKL 2"}, {"nama": "Desi Euis Purnama", "kelas": "X AKL 2"}, {"nama": "Elis Rahmawati Putri", "kelas": "X AKL 2"}, {"nama": "Fakhriy Ahmad Musyafa", "kelas": "X AKL 2"}, {"nama": "Fatimah Azhrah", "kelas": "X AKL 2"}, {"nama": "Gayatri Hidayani", "kelas": "X AKL 2"}, {"nama": "Kanaya Ghaisani Arifah", "kelas": "X AKL 2"}, {"nama": "Klarisa Atsariyyah Azumah", "kelas": "X AKL 2"}, {"nama": "Maulana Malik Ibrahim", "kelas": "X AKL 2"}, {"nama": "Nayla Rizky Fauziah", "kelas": "X AKL 2"}, {"nama": "Nisrina Nur Haifa", "kelas": "X AKL 2"}, {"nama": "Oci Fitri Yani", "kelas": "X AKL 2"}, {"nama": "Putri Keisya Salsabilah", "kelas": "X AKL 2"}, {"nama": "Rasya Putra Herdiansyah", "kelas": "X AKL 2"}, {"nama": "Ritma Septi Ramadhani", "kelas": "X AKL 2"}, {"nama": "Suci Nur Auliani", "kelas": "X AKL 2"}, {"nama": "Syafira Nur Azizah", "kelas": "X AKL 2"}, {"nama": "Syakira Durratu Rismi", "kelas": "X AKL 2"}, {"nama": "Syifa Fauziah Andarista", "kelas": "X AKL 2"}, {"nama": "Alfian Syahputra", "kelas": "X DKV 3"}, {"nama": "Alif Egi Hafano", "kelas": "X DKV 3"}, {"nama": "Azka Rafa Fauzi", "kelas": "X DKV 3"}, {"nama": "Banyu Biru", "kelas": "X DKV 3"}, {"nama": "Conan Persias Armi", "kelas": "X DKV 3"}, {"nama": "Dafa Aldi Firmana", "kelas": "X DKV 3"}, {"nama": "Fidel Eko Sachio", "kelas": "X DKV 3"}, {"nama": "Galdi Shadqa Gardian", "kelas": "X DKV 3"}, {"nama": "Hilman Alghifari Andhika", "kelas": "X DKV 3"}, {"nama": "Kin Stefanus Tambunan", "kelas": "X DKV 3"}, {"nama": "Lala", "kelas": "X DKV 3"}, {"nama": "Lutviah Kadhania", "kelas": "X DKV 3"}, {"nama": "M.rayyan", "kelas": "X DKV 3"}, {"nama": "M.zidane Khadafy", "kelas": "X DKV 3"}, {"nama": "Marcello Ramaditya Ridwan", "kelas": "X DKV 3"}, {"nama": "Meilyta Oktaviani", "kelas": "X DKV 3"}, {"nama": "Nadhira Safinatunnaja Djama", "kelas": "X DKV 3"}, {"nama": "Nadya Diah Ayu Irawan", "kelas": "X DKV 3"}, {"nama": "Naila Syifa Laely", "kelas": "X DKV 3"}, {"nama": "Raffa Vachriza Wibowo", "kelas": "X DKV 3"}, {"nama": "Rafliansyah", "kelas": "X DKV 3"}, {"nama": "Raka Adzan", "kelas": "X DKV 3"}, {"nama": "Sakieb", "kelas": "X DKV 3"}, {"nama": "Steven Masivio Lopu", "kelas": "X DKV 3"}, {"nama": "Sutan Muhammad Fairuz Natal", "kelas": "X DKV 3"}, {"nama": "Zein Laresyahbani", "kelas": "X DKV 3"}, {"nama": "Zhafira Nury Azka", "kelas": "X DKV 3"}, {"nama": "Andira Putri", "kelas": "X FKK 1"}, {"nama": "Anindya Putri Danny", "kelas": "X FKK 1"}, {"nama": "Atikah Febriska", "kelas": "X FKK 1"}, {"nama": "Fitria Nur Hafizah", "kelas": "X FKK 1"}, {"nama": "Inas Zaffirah", "kelas": "X FKK 1"}, {"nama": "Inka Anandya Eka Putri", "kelas": "X FKK 1"}, {"nama": "Isnaini Nurul Ariffah", "kelas": "X FKK 1"}, {"nama": "Isyfi Fiddaroini", "kelas": "X FKK 1"}, {"nama": "Mila Rahmawati", "kelas": "X FKK 1"}, {"nama": "Nada Mutiara Ghina", "kelas": "X FKK 1"}, {"nama": "Nova Fadilatunnisa", "kelas": "X FKK 1"}, {"nama": "Rafif Ihksan Falih", "kelas": "X FKK 1"}, {"nama": "Raquel Medina Laksono", "kelas": "X FKK 1"}, {"nama": "Ratu Reroja Fitriani", "kelas": "X FKK 1"}, {"nama": "Rivatih Syahrifah", "kelas": "X FKK 1"}, {"nama": "Syafira Nuroktafianri", "kelas": "X FKK 1"}, {"nama": "Syifa Haflah Jaaizah", "kelas": "X FKK 1"}, {"nama": "Tsurayya Khansa Natisa", "kelas": "X FKK 1"}, {"nama": "Viddel Catriell Motaro Waruwu", "kelas": "X FKK 1"}, {"nama": "Zahira Nur Zahrah", "kelas": "X FKK 1"}, {"nama": "Afifah Fitriani", "kelas": "X FKK 2"}, {"nama": "Amira Dhia Annisa", "kelas": "X FKK 2"}, {"nama": "Anindya Belia Putri", "kelas": "X FKK 2"}, {"nama": "Asya Humaida", "kelas": "X FKK 2"}, {"nama": "Cella Maria", "kelas": "X FKK 2"}, {"nama": "Diefa Wulansari", "kelas": "X FKK 2"}, {"nama": "Diva Ramadani", "kelas": "X FKK 2"}, {"nama": "Dzihan Syafitri", "kelas": "X FKK 2"}, {"nama": "Husna Yanti", "kelas": "X FKK 2"}, {"nama": "Jasmine Aginta", "kelas": "X FKK 2"}, {"nama": "Juliana Azahra", "kelas": "X FKK 2"}, {"nama": "Kaiya Noor Khairani", "kelas": "X FKK 2"}, {"nama": "Maulidya Puspa Firdausy", "kelas": "X FKK 2"}, {"nama": "Nadhifa Az-zaria", "kelas": "X FKK 2"}, {"nama": "Naylatusi Futia Niswah", "kelas": "X FKK 2"}, {"nama": "Sahira Ahmalia Dwi Putri", "kelas": "X FKK 2"}, {"nama": "Sandira Ikmalia", "kelas": "X FKK 2"}, {"nama": "Savina", "kelas": "X FKK 2"}, {"nama": "Sekar Ayu Ramadhani", "kelas": "X FKK 2"}, {"nama": "Sri Devi Yulianti", "kelas": "X FKK 2"}, {"nama": "Syifa Innayah Nugraha", "kelas": "X FKK 2"}, {"nama": "Tiara Anggriany", "kelas": "X FKK 2"}, {"nama": "Zeny Rachmadani", "kelas": "X FKK 2"}, {"nama": "Achmad Noer Haykal", "kelas": "X MP 1"}, {"nama": "Ahmad Baini", "kelas": "X MP 1"}, {"nama": "Ahmad Saputra", "kelas": "X MP 1"}, {"nama": "Alena", "kelas": "X MP 1"}, {"nama": "Anindita Parameswari Zahra", "kelas": "X MP 1"}, {"nama": "Annatasya Agustina Virli", "kelas": "X MP 1"}, {"nama": "Aurelia Maulani Al Zahra", "kelas": "X MP 1"}, {"nama": "Axel Arrizky", "kelas": "X MP 1"}, {"nama": "Azzam Ramadhan", "kelas": "X MP 1"}, {"nama": "Chellen Setiana Juanita", "kelas": "X MP 1"}, {"nama": "Dewi Puspita", "kelas": "X MP 1"}, {"nama": "Eka Nur Aisah", "kelas": "X MP 1"}, {"nama": "Evan Fauzy", "kelas": "X MP 1"}, {"nama": "Febriana Aulia Putri", "kelas": "X MP 1"}, {"nama": "Fikri Akbar Syami", "kelas": "X MP 1"}, {"nama": "Helda Fitria Khanzania", "kelas": "X MP 1"}, {"nama": "Ibni Rafif Sakhiy", "kelas": "X MP 1"}, {"nama": "Ijlal Putra Ananda Sukron", "kelas": "X MP 1"}, {"nama": "M Luthfie Fadillah", "kelas": "X MP 1"}, {"nama": "Nailan Mardianti", "kelas": "X MP 1"}, {"nama": "Naisila Rosid", "kelas": "X MP 1"}, {"nama": "Nazwan Iqbal Syafiq", "kelas": "X MP 1"}, {"nama": "Revand Alfian Putra Gunawan", "kelas": "X MP 1"}, {"nama": "Riska", "kelas": "X MP 1"}, {"nama": "Rizki Ramadhan", "kelas": "X MP 1"}, {"nama": "Rizky Ayu Lestari", "kelas": "X MP 1"}, {"nama": "Yunniarti", "kelas": "X MP 1"}, {"nama": "Zulfa Aqilla", "kelas": "X MP 1"}, {"nama": "Adam Kurniawan", "kelas": "X MP 2"}, {"nama": "Agiel Destiana", "kelas": "X MP 2"}, {"nama": "Aira Vinanda Rachman", "kelas": "X MP 2"}, {"nama": "Alvino Rasya Achmad", "kelas": "X MP 2"}, {"nama": "Amanda Pertiwi", "kelas": "X MP 2"}, {"nama": "Ana Althafunisa", "kelas": "X MP 2"}, {"nama": "Anggun Dwi Anggraeni", "kelas": "X MP 2"}, {"nama": "Berliana Putri Nongka", "kelas": "X MP 2"}, {"nama": "Bonavito Arif Dwi Nugroho L", "kelas": "X MP 2"}, {"nama": "Cha", "kelas": "X MP 2"}, {"nama": "Firda Maulida", "kelas": "X MP 2"}, {"nama": "Ganesha Galuh Nareswari", "kelas": "X MP 2"}, {"nama": "Husna Muffidah Hasanah", "kelas": "X MP 2"}, {"nama": "Karina Athalia", "kelas": "X MP 2"}, {"nama": "Keylila Andini", "kelas": "X MP 2"}, {"nama": "Kinanthi Gracesela Sangadi", "kelas": "X MP 2"}, {"nama": "Monique Zaveria Idris", "kelas": "X MP 2"}, {"nama": "Muhammad Rayvaldi Anas", "kelas": "X MP 2"}, {"nama": "Okta Tri Hartanti", "kelas": "X MP 2"}, {"nama": "Puji Yani", "kelas": "X MP 2"}, {"nama": "Qeisya Laedy Suwandi", "kelas": "X MP 2"}, {"nama": "Reza Nur Fahmi", "kelas": "X MP 2"}, {"nama": "Samuel Christian Yohanes", "kelas": "X MP 2"}, {"nama": "Sandri Ikmal", "kelas": "X MP 2"}, {"nama": "Shakila Azahwa", "kelas": "X MP 2"}, {"nama": "Sintiana Lestari", "kelas": "X MP 2"}, {"nama": "Tiara Nursifa", "kelas": "X MP 2"}, {"nama": "Ulfa Ningsih", "kelas": "X MP 2"}, {"nama": "Wahid Yusuf", "kelas": "X MP 2"}, {"nama": "Yunanda Putri Saidi", "kelas": "X MP 2"}, {"nama": "Zahra Salsabila", "kelas": "X MP 2"}, {"nama": "Zaskia Alkhalifi", "kelas": "X MP 2"}, {"nama": "Ade Apriliana Putri", "kelas": "X MP 3"}, {"nama": "Ahmad Fauzi", "kelas": "X MP 3"}, {"nama": "Aisyah Istiqomah", "kelas": "X MP 3"}, {"nama": "An Nisa Aulia Syahadah", "kelas": "X MP 3"}, {"nama": "Arina Syarfa Khairunnisa", "kelas": "X MP 3"}, {"nama": "Azriel Zhidan Baihaqi", "kelas": "X MP 3"}, {"nama": "Bella Amelia", "kelas": "X MP 3"}, {"nama": "Carrissa Putri Syawallia", "kelas": "X MP 3"}, {"nama": "Christian Revan Pradipta Siburian", "kelas": "X MP 3"}, {"nama": "Cinta Nurul Insani", "kelas": "X MP 3"}, {"nama": "Elivia Nuraini", "kelas": "X MP 3"}, {"nama": "Farel Vifaldy Taslim", "kelas": "X MP 3"}, {"nama": "Ilma Alawiyah", "kelas": "X MP 3"}, {"nama": "Kesya Ananda Putri", "kelas": "X MP 3"}, {"nama": "Keyla Pratiwi", "kelas": "X MP 3"}, {"nama": "Kirana Silvi Fitriani", "kelas": "X MP 3"}, {"nama": "Nadya Desiana Putri", "kelas": "X MP 3"}, {"nama": "Nafisah Oktaria Wardana", "kelas": "X MP 3"}, {"nama": "Naufal Fiqri Destiawan", "kelas": "X MP 3"}, {"nama": "Nur Ashifah", "kelas": "X MP 3"}, {"nama": "Raditya Putra", "kelas": "X MP 3"}, {"nama": "Regina Arfiani", "kelas": "X MP 3"}, {"nama": "Revita Destriany Putri", "kelas": "X MP 3"}, {"nama": "Rusydaan Ar Rasyid", "kelas": "X MP 3"}, {"nama": "Salsabila", "kelas": "X MP 3"}, {"nama": "Sherin Ziananda Putri", "kelas": "X MP 3"}, {"nama": "Syifa Karisma Putri", "kelas": "X MP 3"}, {"nama": "Zahira Cahaya Alinsani", "kelas": "X MP 3"}, {"nama": "Aisya Maidina Putti", "kelas": "X MP 4"}, {"nama": "Alesandra Ebigel Mau", "kelas": "X MP 4"}, {"nama": "Assyah Aulia Putri", "kelas": "X MP 4"}, {"nama": "Aura Dewi Saraswati", "kelas": "X MP 4"}, {"nama": "Aurora Natalia Zemima", "kelas": "X MP 4"}, {"nama": "Avisya Fatana Zahra Ruhiyat", "kelas": "X MP 4"}, {"nama": "Bunga Dewi Rembulan", "kelas": "X MP 4"}, {"nama": "Calysta Isaura Devana", "kelas": "X MP 4"}, {"nama": "Chaerunisa Nur Arafah", "kelas": "X MP 4"}, {"nama": "Engel Putri Rahmadiani", "kelas": "X MP 4"}, {"nama": "Fathi Fakhrizal", "kelas": "X MP 4"}, {"nama": "Febby Maulinda", "kelas": "X MP 4"}, {"nama": "Kamila Sya’bana", "kelas": "X MP 4"}, {"nama": "Keisya Aprilia", "kelas": "X MP 4"}, {"nama": "Khesyar Adhitama", "kelas": "X MP 4"}, {"nama": "Mitha Devisa", "kelas": "X MP 4"}, {"nama": "Nabila Pratisya Putri", "kelas": "X MP 4"}, {"nama": "Nadine Aisyah Nacila", "kelas": "X MP 4"}, {"nama": "Natasyha Desyandini", "kelas": "X MP 4"}, {"nama": "Nindya Nurkhalizah", "kelas": "X MP 4"}, {"nama": "Putri Wahid Hafizah", "kelas": "X MP 4"}, {"nama": "Radinkha Putri Sihaloho", "kelas": "X MP 4"}, {"nama": "Selfi Noviyanti", "kelas": "X MP 4"}, {"nama": "Sifa Melani", "kelas": "X MP 4"}, {"nama": "Siti Aisah Putri", "kelas": "X MP 4"}, {"nama": "Syachdilla Diandra Zahir", "kelas": "X MP 4"}, {"nama": "Wulandari", "kelas": "X MP 4"}, {"nama": "Zahira Aziza Fazila", "kelas": "X MP 4"}, {"nama": "Adlisa Putra Pandawa", "kelas": "X MP 5"}, {"nama": "Aida Sri Rahayu Manis", "kelas": "X MP 5"}, {"nama": "Aisyah Nurul Amanda", "kelas": "X MP 5"}, {"nama": "Alika Naurah Rezita", "kelas": "X MP 5"}, {"nama": "Amira Syafira", "kelas": "X MP 5"}, {"nama": "Anita", "kelas": "X MP 5"}, {"nama": "Cheryl Anindya Sakhy", "kelas": "X MP 5"}, {"nama": "Dinaagustina", "kelas": "X MP 5"}, {"nama": "Feilina Gabriela", "kelas": "X MP 5"}, {"nama": "Fitri Muria Agung", "kelas": "X MP 5"}, {"nama": "Ghea Amanda", "kelas": "X MP 5"}, {"nama": "Husnatul Fauziah", "kelas": "X MP 5"}, {"nama": "Indah Febiola", "kelas": "X MP 5"}, {"nama": "Jasmine Malika Azahra", "kelas": "X MP 5"}, {"nama": "Melinda Ayu Latifah", "kelas": "X MP 5"}, {"nama": "Naura Octaviany Khaishah", "kelas": "X MP 5"}, {"nama": "Naysila Aldiyansah", "kelas": "X MP 5"}, {"nama": "Putri Chaldera Casmita", "kelas": "X MP 5"}, {"nama": "Raisa Tsania Kamila Alza", "kelas": "X MP 5"}, {"nama": "Seftiana Fitri", "kelas": "X MP 5"}, {"nama": "Sevia Ramadani", "kelas": "X MP 5"}, {"nama": "Siti Aulia Rahmawati", "kelas": "X MP 5"}, {"nama": "Wafa Rahayu Fauziah", "kelas": "X MP 5"}, {"nama": "Zahra Tunnazwa", "kelas": "X MP 5"}, {"nama": "Adzania Ramadhani", "kelas": "X PM 1"}, {"nama": "Alfiansyah", "kelas": "X PM 1"}, {"nama": "Aqila Griselda Putri Emery", "kelas": "X PM 1"}, {"nama": "Devia Meyrizka", "kelas": "X PM 1"}, {"nama": "Dila Noor Alifia", "kelas": "X PM 1"}, {"nama": "Dista Ragil Pratiwi", "kelas": "X PM 1"}, {"nama": "Diva Amelia", "kelas": "X PM 1"}, {"nama": "Dwi Ayu Lestari", "kelas": "X PM 1"}, {"nama": "Faqih Muhajir Sudarsono", "kelas": "X PM 1"}, {"nama": "Febriana Anggraini", "kelas": "X PM 1"}, {"nama": "Hanisa Berliana", "kelas": "X PM 1"}, {"nama": "Kahfa Khairul Ashabi", "kelas": "X PM 1"}, {"nama": "Kanaya Nur Ismalia", "kelas": "X PM 1"}, {"nama": "M. Fashan Arvan Abdul Aziz", "kelas": "X PM 1"}, {"nama": "Muhamad Dayhaqi", "kelas": "X PM 1"}, {"nama": "Muhamad Naharudin", "kelas": "X PM 1"}, {"nama": "Muhammad Maulana", "kelas": "X PM 1"}, {"nama": "Muhammad Rafli", "kelas": "X PM 1"}, {"nama": "Naira Suci Lestari", "kelas": "X PM 1"}, {"nama": "Nikita", "kelas": "X PM 1"}, {"nama": "Radhitya Evan", "kelas": "X PM 1"}, {"nama": "Raihan Setiawan", "kelas": "X PM 1"}, {"nama": "Revan Putra Susanto", "kelas": "X PM 1"}, {"nama": "Sultan", "kelas": "X PM 1"}, {"nama": "Syafira Nur Jannah", "kelas": "X PM 1"}, {"nama": "Yales Sustanti", "kelas": "X PM 1"}, {"nama": "Andra Pratama Tulasi", "kelas": "X PM 2"}, {"nama": "Arya Afandi Ramadan", "kelas": "X PM 2"}, {"nama": "Chairul Izam Fathurobbi", "kelas": "X PM 2"}, {"nama": "Deren Rasyandi", "kelas": "X PM 2"}, {"nama": "Dio Pratama Arazy", "kelas": "X PM 2"}, {"nama": "Harzya Ferdian Setiyoko", "kelas": "X PM 2"}, {"nama": "Ilham Bayu Pradana", "kelas": "X PM 2"}, {"nama": "M Adrian Saputra", "kelas": "X PM 2"}, {"nama": "M. Maulana Kafi", "kelas": "X PM 2"}, {"nama": "M.rafa Hibatullah", "kelas": "X PM 2"}, {"nama": "Mohamadaprilyansyah", "kelas": "X PM 2"}, {"nama": "Muhamad Arifal Syahqi", "kelas": "X PM 2"}, {"nama": "Muhamad Fariz", "kelas": "X PM 2"}, {"nama": "Muhamad Raffa", "kelas": "X PM 2"}, {"nama": "Muhammad Albaru", "kelas": "X PM 2"}, {"nama": "Muhammad Eka Rahmattullah", "kelas": "X PM 2"}, {"nama": "Muhammad Faizin", "kelas": "X PM 2"}, {"nama": "Muhammad Fardan Arafah", "kelas": "X PM 2"}, {"nama": "Muhammad Saputra", "kelas": "X PM 2"}, {"nama": "Nazwa Eka Fitri", "kelas": "X PM 2"}, {"nama": "Putri Syafira", "kelas": "X PM 2"}, {"nama": "Rizky Aditya", "kelas": "X PM 2"}, {"nama": "Rizqia Rahmadhani", "kelas": "X PM 2"}, {"nama": "Shafwan Nizami", "kelas": "X PM 2"}, {"nama": "Wardan Arjuansyah", "kelas": "X PM 2"}, {"nama": "Wijaya Zakaria", "kelas": "X PM 2"}, {"nama": "Yusuf Mulyono", "kelas": "X PM 2"}, {"nama": "Adelia Evita", "kelas": "X PM 3"}, {"nama": "Adrian Pratama", "kelas": "X PM 3"}, {"nama": "Aulia Putri Djahra", "kelas": "X PM 3"}, {"nama": "Bintang Syahril Ibrahim", "kelas": "X PM 3"}, {"nama": "Dani Saputra", "kelas": "X PM 3"}, {"nama": "Destriana Wullandari", "kelas": "X PM 3"}, {"nama": "Dzaky Syafiq Azuan", "kelas": "X PM 3"}, {"nama": "Elisa Julianti", "kelas": "X PM 3"}, {"nama": "Farih Muzzamil", "kelas": "X PM 3"}, {"nama": "Ferdian Suryana Pratama", "kelas": "X PM 3"}, {"nama": "Khanaya Nafiatul Azkia", "kelas": "X PM 3"}, {"nama": "Khanaya Putri Widiyanti", "kelas": "X PM 3"}, {"nama": "Muhammad Ridwan", "kelas": "X PM 3"}, {"nama": "Nadya Almira Putri", "kelas": "X PM 3"}, {"nama": "Neisya Laedy Suwandi", "kelas": "X PM 3"}, {"nama": "Novita Sari", "kelas": "X PM 3"}, {"nama": "Pajar Okta Pirmansah", "kelas": "X PM 3"}, {"nama": "Rasya Putra Herdiansyah", "kelas": "X PM 3"}, {"nama": "Refandi", "kelas": "X PM 3"}, {"nama": "Rifa Handayani", "kelas": "X PM 3"}, {"nama": "Riski Nurfadillah", "kelas": "X PM 3"}, {"nama": "Salsa Desta Putri", "kelas": "X PM 3"}, {"nama": "Sashi Aprillia", "kelas": "X PM 3"}, {"nama": "Silvi Anggraeni", "kelas": "X PM 3"}, {"nama": "Syahda Ayatul Husna", "kelas": "X PM 3"}, {"nama": "Syifa Damayanti", "kelas": "X PM 3"}, {"nama": "Wildan Rafa Febrian", "kelas": "X PM 3"}, {"nama": "Zidni Muhammad Robby Izani", "kelas": "X PM 3"}, {"nama": "Aisah Ayu Putri", "kelas": "X PM 4"}, {"nama": "Dani Cahyono", "kelas": "X PM 4"}, {"nama": "Dara Oktapia", "kelas": "X PM 4"}, {"nama": "Davies Ardyansyah", "kelas": "X PM 4"}, {"nama": "Dea Vinola", "kelas": "X PM 4"}, {"nama": "Devdan Sean Nara", "kelas": "X PM 4"}, {"nama": "Elmika Anandrio", "kelas": "X PM 4"}, {"nama": "Fahri Anail Ramadhan", "kelas": "X PM 4"}, {"nama": "Faidah Nida", "kelas": "X PM 4"}, {"nama": "Fajar Rachman", "kelas": "X PM 4"}, {"nama": "Fatan Juhdan", "kelas": "X PM 4"}, {"nama": "Fatiya Zahra", "kelas": "X PM 4"}, {"nama": "Fgisyohani", "kelas": "X PM 4"}, {"nama": "Gita Nadia Indah Sari", "kelas": "X PM 4"}, {"nama": "Ichal.aprilio", "kelas": "X PM 4"}, {"nama": "Inggit Hapsari", "kelas": "X PM 4"}, {"nama": "Kezia Rahel Meyrsena", "kelas": "X PM 4"}, {"nama": "Muhammad Azzam Ramadhan", "kelas": "X PM 4"}, {"nama": "Naufal Putra Gasani", "kelas": "X PM 4"}, {"nama": "Nezar Fatriya", "kelas": "X PM 4"}, {"nama": "Non", "kelas": "X PM 4"}, {"nama": "Prihana Revania Meca", "kelas": "X PM 4"}, {"nama": "Reisya Putra Nadian", "kelas": "X PM 4"}, {"nama": "Sevilla Gita Valencia", "kelas": "X PM 4"}, {"nama": "Talitha Vania Dharma", "kelas": "X PM 4"}, {"nama": "Adelia Juniarunnisa", "kelas": "X PM 5"}, {"nama": "Aditya Sudrajat", "kelas": "X PM 5"}, {"nama": "Anastasya Putri", "kelas": "X PM 5"}, {"nama": "Andini Annisa Alfadlillah", "kelas": "X PM 5"}, {"nama": "Aulia Cika Salsabila", "kelas": "X PM 5"}, {"nama": "Ayu Rahmadani", "kelas": "X PM 5"}, {"nama": "Fadlan Zamzibran", "kelas": "X PM 5"}, {"nama": "Faidah Nada Al Rasyid", "kelas": "X PM 5"}, {"nama": "Farhan Pratama Maribet", "kelas": "X PM 5"}, {"nama": "Icha Arista Dewi", "kelas": "X PM 5"}, {"nama": "Indriani Putri", "kelas": "X PM 5"}, {"nama": "Keiza Egi Alfarizi", "kelas": "X PM 5"}, {"nama": "M Hadi Abiyah", "kelas": "X PM 5"}, {"nama": "Muhammad Rizki", "kelas": "X PM 5"}, {"nama": "Muhammad.kennan.athaya", "kelas": "X PM 5"}, {"nama": "Naufal Hafish Saputra", "kelas": "X PM 5"}, {"nama": "Putri Chaldera Casmita", "kelas": "X PM 5"}, {"nama": "Rasya Putra Alrizam", "kelas": "X PM 5"}, {"nama": "Refian Al Karomah", "kelas": "X PM 5"}, {"nama": "Ridho Saehaq", "kelas": "X PM 5"}, {"nama": "Ulia Rahma Adekantari", "kelas": "X PM 5"}, {"nama": "Vino Alhabsy Nicola", "kelas": "X PM 5"}, {"nama": "Zahid Mou Rahman", "kelas": "X PM 5"}];
+
+        const listBulanS1 = ["Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const listBulanS2 = ["Januari", "Februari", "Maret", "April", "Mei", "Juni"];
+        const daysInMonthMap = {
+            "Juli": 31, "Agustus": 31, "September": 30, "Oktober": 31, "November": 30, "Desember": 31,
+            "Januari": 31, "Februari": 28, "Maret": 31, "April": 30, "Mei": 31, "Juni": 30
+        };
+
+        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswaSMK_V114')) || [];
+
+        function showToast(message) {
+            const toast = document.getElementById("toastNotif");
+            toast.innerText = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function initDatabase() {
+            if (dbSiswa.length === 0) {
+                initialMasterSiswa.forEach(s => {
+                    const createEmptyDailyAbsen = (months) => {
+                        let res = {}; months.forEach(m => { res[m] = Array(31).fill('H'); }); return res;
+                    };
+                    const baseObj = { 
+                        nama: s.nama, kelas: s.kelas, 
+                        absen_daily_s1: createEmptyDailyAbsen(listBulanS1),
+                        absen_daily_s2: createEmptyDailyAbsen(listBulanS2),
+                        h_s1: Array(15).fill(0), h_s2: Array(15).fill(0),
+                        u_s1: Array(4).fill(0), u_s2: Array(4).fill(0)
+                    };
+                    if (s.kelas === 'X AKC 1' || s.kelas === 'X AKC 2') {
+                        dbSiswa.push({ ...baseObj, mapel: 'Coding' });
+                        dbSiswa.push({ ...baseObj, mapel: 'TIK' });
+                    } else {
+                        dbSiswa.push({ ...baseObj, mapel: 'Umum' });
+                    }
+                });
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+            }
+        }
+
+        function updateDropdownBulan() {
+            const sem = document.getElementById('selectSemesterAbsen').value;
+            const selectBulan = document.getElementById('selectBulanAbsen');
+            const list = sem === '1' ? listBulanS1 : listBulanS2;
+            selectBulan.innerHTML = list.map(b => `<option value="${b}">${b}</option>`).join('');
+        }
+
+        function hitungPersenAbsensi(totIz, totSk, totAl) {
+            const totalIS = totIz + totSk;
+            const excessIS = Math.max(0, totalIS - 3);
+            const potAlpha = totAl * 3;
+            const totalPotongan = excessIS + potAlpha;
+            return Math.max(0, 100 - totalPotongan);
+        }
+
+        function calcRata(arr) {
+            if (!arr || arr.length === 0) return 0;
+            const sum = arr.reduce((acc, cur) => acc + (parseFloat(cur) || 0), 0);
+            return (sum / arr.length).toFixed(2);
+        }
+
+        function hitungRapot(absensi, f1H, f2H, f1U, f2U) {
+            const a = parseFloat(absensi) || 0;
+            const avgTugas = (parseFloat(f1H) + parseFloat(f2H)) / 2;
+            const avgUlangan = (parseFloat(f1U) + parseFloat(f2U)) / 2;
+            return ((a * 0.2) + (avgTugas * 0.3) + (avgUlangan * 0.5)).toFixed(2);
+        }
+
+        function toTitleCase(str) {
+            return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        function handleKelasChange() {
+            const kelas = document.getElementById('selectKelas').value;
+            const groupMapel = document.getElementById('groupMapel');
+            if (kelas === 'X AKC 1' || kelas === 'X AKC 2') {
+                groupMapel.style.display = 'flex';
+            } else {
+                groupMapel.style.display = 'none';
+            }
+            updateDropdownBulan();
+            muatDataSiswa();
+        }
+
+        function getMapelAktif() {
+            const kelas = document.getElementById('selectKelas').value;
+            if (kelas === 'X AKC 1' || kelas === 'X AKC 2') {
+                return document.getElementById('selectMapel').value;
+            }
+            return 'Umum';
+        }
+
+        function updateAbsenCell(namaSiswa, kelasSiswa, mapelSiswa, bulan, dayIndex, el) {
+            let val = el.value.trim().toUpperCase();
+            if (val !== 'H' && val !== 'I' && val !== 'S' && val !== 'A') val = 'H';
+            el.value = val;
+            el.className = `box-input-absen color-${val} input-absen-item`;
+
+            const semAbsen = document.getElementById('selectSemesterAbsen').value;
+            const target = dbSiswa.find(s => s.nama === namaSiswa && s.kelas === kelasSiswa && s.mapel === mapelSiswa);
+            if (target) {
+                if (semAbsen === '1') {
+                    if (!target.absen_daily_s1) target.absen_daily_s1 = {};
+                    if (!target.absen_daily_s1[bulan]) target.absen_daily_s1[bulan] = Array(31).fill('H');
+                    target.absen_daily_s1[bulan][dayIndex] = val;
+                } else {
+                    if (!target.absen_daily_s2) target.absen_daily_s2 = {};
+                    if (!target.absen_daily_s2[bulan]) target.absen_daily_s2[bulan] = Array(31).fill('H');
+                    target.absen_daily_s2[bulan][dayIndex] = val;
+                }
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                showToast("Data absensi berhasil diubah & disimpan otomatis!");
+            }
+        }
+
+        function updateTugasCell(namaSiswa, kelasSiswa, mapelSiswa, tugasIndex, el) {
+            let val = parseFloat(el.value) || 0;
+            const semTugas = document.getElementById('selectSemesterTugas').value;
+            const target = dbSiswa.find(s => s.nama === namaSiswa && s.kelas === kelasSiswa && s.mapel === mapelSiswa);
+            if (target) {
+                if (semTugas === '1') {
+                    if (!target.h_s1) target.h_s1 = Array(15).fill(0);
+                    target.h_s1[tugasIndex] = val;
+                } else {
+                    if (!target.h_s2) target.h_s2 = Array(15).fill(0);
+                    target.h_s2[tugasIndex] = val;
+                }
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                showToast("Nilai harian berhasil diubah & disimpan otomatis!");
+            }
+        }
+
+        function updateUlanganCell(namaSiswa, kelasSiswa, mapelSiswa, ulanganIndex, el) {
+            let val = parseFloat(el.value) || 0;
+            const semUlangan = document.getElementById('selectSemesterUlangan').value;
+            const target = dbSiswa.find(s => s.nama === namaSiswa && s.kelas === kelasSiswa && s.mapel === mapelSiswa);
+            if (target) {
+                if (semUlangan === '1') {
+                    if (!target.u_s1) target.u_s1 = Array(4).fill(0);
+                    target.u_s1[ulanganIndex] = val;
+                } else {
+                    if (!target.u_s2) target.u_s2 = Array(4).fill(0);
+                    target.u_s2[ulanganIndex] = val;
+                }
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                showToast("Nilai ulangan berhasil diubah & disimpan otomatis!");
+            }
+        }
+
+        function renderDailyHeader(bulan) {
+            const totalDays = daysInMonthMap[bulan] || 31;
+            let tr1 = `<tr>
+                <th rowspan="2">No</th>
+                <th rowspan="2">Nama Siswa</th>
+                <th colspan="${totalDays}" style="background-color: #fef9c3; color: #854d0e;">Bulan ${bulan} (Tanggal 1 - ${totalDays})</th>
+                <th colspan="3">Total Absen</th>
+                <th rowspan="2">Aksi</th>
+            </tr>`;
+            let tr2 = '<tr>';
+            for (let d = 1; d <= totalDays; d++) { tr2 += `<th style="width:28px;">${d}</th>`; }
+            tr2 += '<th>I</th><th>S</th><th>A</th></tr>';
+            document.getElementById('theadAbsen').innerHTML = tr1 + tr2;
+        }
+
+        function countTotalAbsenSemester(sObj, sem) {
+            const months = sem === '1' ? listBulanS1 : listBulanS2;
+            const dailyData = sem === '1' ? sObj.absen_daily_s1 : sObj.absen_daily_s2;
+            let iz = 0, sk = 0, al = 0;
+            months.forEach(m => {
+                const arr = dailyData && dailyData[m] ? dailyData[m] : Array(31).fill('H');
+                const daysLimit = daysInMonthMap[m] || 31;
+                for (let d = 0; d < daysLimit; d++) {
+                    const st = (arr[d] || 'H').toUpperCase();
+                    if (st === 'I') iz++; else if (st === 'S') sk++; else if (st === 'A') al++;
+                }
+            });
+            return { iz, sk, al };
+        }
+
+        function muatDataSiswa() {
+            const kelas = document.getElementById('selectKelas').value;
+            const mapel = getMapelAktif();
+            const info = document.getElementById('infoKelasAktif');
+
+            updateDropdownBulan();
+
+            if (!kelas) {
+                info.innerText = 'Silakan pilih kelas pada panel di atas untuk mulai menampilkan data rekap siswa.';
+                document.getElementById('tbodyBeranda').innerHTML = '';
+                document.getElementById('tbodyAbsen').innerHTML = '';
+                document.getElementById('tbodyTugas').innerHTML = '';
+                document.getElementById('tbodyUlangan').innerHTML = '';
+                return;
+            }
+
+            const semBeranda = document.getElementById('selectSemesterBeranda').value;
+            const semAbsen = document.getElementById('selectSemesterAbsen').value;
+            const bulanAbsen = document.getElementById('selectBulanAbsen').value || (semAbsen === '1' ? 'Juli' : 'Januari');
+            const semTugas = document.getElementById('selectSemesterTugas').value;
+            const semUlangan = document.getElementById('selectSemesterUlangan').value;
+
+            info.innerHTML = `Menampilkan rekapitulasi data kelas: <strong>${kelas}</strong> ${mapel !== 'Umum' ? `(Mata Pelajaran: <strong>${mapel}</strong>)` : ''}`;
+
+            const filteredData = dbSiswa.filter(s => s.kelas === kelas && s.mapel === mapel);
+            filteredData.sort((a, b) => a.nama.localeCompare(b.nama));
+
+            let htmlBeranda = '', htmlAbsen = '', htmlTugas = '', htmlUlangan = '';
+            renderDailyHeader(bulanAbsen);
+
+            filteredData.forEach((s, idx) => {
+                const totSem = countTotalAbsenSemester(s, semBeranda);
+                const pctAbsen = hitungPersenAbsensi(totSem.iz, totSem.sk, totSem.al);
+
+                const hArr = semBeranda === '1' ? (s.h_s1 || Array(15).fill(0)) : (s.h_s2 || Array(15).fill(0));
+                const finalTugas1 = calcRata(hArr.slice(0, 7));
+                const finalTugas2 = calcRata(hArr.slice(7, 15));
+
+                const uArr = semBeranda === '1' ? (s.u_s1 || Array(4).fill(0)) : (s.u_s2 || Array(4).fill(0));
+                const finalUlangan1 = calcRata(uArr.slice(0, 2));
+                const finalUlangan2 = calcRata(uArr.slice(2, 4));
+
+                const rapot = hitungRapot(pctAbsen, finalTugas1, finalTugas2, finalUlangan1, finalUlangan2);
+
+                htmlBeranda += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="text-left">${s.nama}</td>
+                        <td>${s.kelas}</td>
+                        <td>${s.mapel}</td>
+                        <td>Semester ${semBeranda}</td>
+                        <td class="bg-absen">${totSem.iz}</td>
+                        <td class="bg-absen">${totSem.sk}</td>
+                        <td class="bg-absen">${totSem.al}</td>
+                        <td><strong>${pctAbsen}%</strong></td>
+                        <td class="bg-final">${finalTugas1}</td>
+                        <td class="bg-final">${finalTugas2}</td>
+                        <td class="bg-final-2">${finalUlangan1}</td>
+                        <td class="bg-final-2">${finalUlangan2}</td>
+                        <td><strong>${rapot}</strong></td>
+                    </tr>`;
+
+                const dailyDataObj = semAbsen === '1' ? s.absen_daily_s1 : s.absen_daily_s2;
+                const monthArr = (dailyDataObj && dailyDataObj[bulanAbsen]) ? dailyDataObj[bulanAbsen] : Array(31).fill('H');
+                const totalDays = daysInMonthMap[bulanAbsen] || 31;
+
+                let dayCells = '';
+                let mIz = 0, mSk = 0, mAl = 0;
+                for (let d = 0; d < totalDays; d++) {
+                    const status = (monthArr[d] || 'H').toUpperCase();
+                    if (status === 'I') mIz++; else if (status === 'S') mSk++; else if (status === 'A') mAl++;
+                    dayCells += `<td><input type="text" maxlength="1" class="box-input-absen color-${status} input-absen-item" value="${status}" oninput="updateAbsenCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', '${bulanAbsen}', ${d}, this)" onfocus="this.select()"></td>`;
+                }
+
+                htmlAbsen += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="text-left">${s.nama}</td>
+                        ${dayCells}
+                        <td>${mIz}</td><td>${mSk}</td><td>${mAl}</td>
+                        <td>
+                            <button class="btn-warning" onclick="editNamaSiswa('${s.nama.replace(/'/g, "\\'")}')">Edit</button>
+                            <button class="btn-danger" onclick="hapusSiswa('${s.nama.replace(/'/g, "\\'")}')">Hapus</button>
+                        </td>
+                    </tr>`;
+
+                const currentHArr = semTugas === '1' ? (s.h_s1 || Array(15).fill(0)) : (s.h_s2 || Array(15).fill(0));
+                const f1H = calcRata(currentHArr.slice(0, 7));
+                const f2H = calcRata(currentHArr.slice(7, 15));
+
+                let hInputs1 = '', hInputs2 = '';
+                for (let i = 0; i < 7; i++) {
+                    hInputs1 += `<td><input type="number" class="input-score" value="${currentHArr[i] || 0}" min="0" max="100" oninput="updateTugasCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', ${i}, this)"></td>`;
+                }
+                for (let i = 7; i < 15; i++) {
+                    hInputs2 += `<td><input type="number" class="input-score" value="${currentHArr[i] || 0}" min="0" max="100" oninput="updateTugasCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', ${i}, this)"></td>`;
+                }
+
+                htmlTugas += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="text-left">${s.nama}</td>
+                        ${hInputs1}<td class="bg-final">${f1H}</td>
+                        ${hInputs2}<td class="bg-final-2">${f2H}</td>
+                    </tr>`;
+
+                const currentUArr = semUlangan === '1' ? (s.u_s1 || Array(4).fill(0)) : (s.u_s2 || Array(4).fill(0));
+                const f1U = calcRata(currentUArr.slice(0, 2));
+                const f2U = calcRata(currentUArr.slice(2, 4));
+
+                htmlUlangan += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="text-left">${s.nama}</td>
+                        <td><input type="number" class="input-score" value="${currentUArr[0] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 0, this)"></td>
+                        <td><input type="number" class="input-score" value="${currentUArr[1] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 1, this)"></td>
+                        <td class="bg-final">${f1U}</td>
+                        <td><input type="number" class="input-score" value="${currentUArr[2] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 2, this)"></td>
+                        <td><input type="number" class="input-score" value="${currentUArr[3] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 3, this)"></td>
+                        <td class="bg-final-2">${f2U}</td>
+                    </tr>`;
+            });
+
+            document.getElementById('tbodyBeranda').innerHTML = htmlBeranda;
+            document.getElementById('tbodyAbsen').innerHTML = htmlAbsen;
+            document.getElementById('tbodyTugas').innerHTML = htmlTugas;
+            document.getElementById('tbodyUlangan').innerHTML = htmlUlangan;
+        }
+
+        function tambahSiswaBaru() {
+            const kelas = document.getElementById('selectKelas').value;
+            const inputNama = document.getElementById('inputNamaSiswaBaru');
+            let namaBaru = inputNama.value.trim();
+
+            if (!kelas) { alert('Pilih kelas terlebih dahulu!'); return; }
+            if (!namaBaru) { alert('Masukkan nama siswa!'); return; }
+
+            namaBaru = toTitleCase(namaBaru);
+            const createEmptyDailyAbsen = (months) => {
+                let res = {}; months.forEach(m => { res[m] = Array(31).fill('H'); }); return res;
+            };
+
+            const baseObj = { 
+                nama: namaBaru, kelas: kelas, 
+                absen_daily_s1: createEmptyDailyAbsen(listBulanS1),
+                absen_daily_s2: createEmptyDailyAbsen(listBulanS2),
+                h_s1: Array(15).fill(0), h_s2: Array(15).fill(0),
+                u_s1: Array(4).fill(0), u_s2: Array(4).fill(0)
+            };
+
+            if (kelas === 'X AKC 1' || kelas === 'X AKC 2') {
+                dbSiswa.push({ ...baseObj, mapel: 'Coding' });
+                dbSiswa.push({ ...baseObj, mapel: 'TIK' });
+            } else {
+                dbSiswa.push({ ...baseObj, mapel: 'Umum' });
+            }
+
+            localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+            inputNama.value = '';
+            muatDataSiswa();
+            showToast(`Sukses! Siswa "${namaBaru}" berhasil ditambahkan.`);
+        }
+
+        function editNamaSiswa(namaLama) {
+            const kelas = document.getElementById('selectKelas').value;
+            let namaBaru = prompt('Ubah nama siswa:', namaLama);
+            if (namaBaru && namaBaru.trim() !== '' && namaBaru !== namaLama) {
+                namaBaru = toTitleCase(namaBaru.trim());
+                dbSiswa.forEach(s => { if (s.nama === namaLama && s.kelas === kelas) s.nama = namaBaru; });
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                muatDataSiswa();
+                showToast('Sukses! Nama siswa berhasil diubah.');
+            }
+        }
+
+        function hapusSiswa(nama) {
+            const kelas = document.getElementById('selectKelas').value;
+            if (confirm(`Yakin ingin menghapus siswa "${nama}" dari kelas ${kelas}?`)) {
+                dbSiswa = dbSiswa.filter(s => !(s.nama === nama && s.kelas === kelas));
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                muatDataSiswa();
+                showToast('Sukses! Siswa berhasil dihapus.');
+            }
+        }
+
+        function simpanSemuaData() {
+            localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+            muatDataSiswa();
+            showToast('Sukses! Semua data berhasil disimpan dan diperbarui.');
+        }
+
+        function resetDataAktif() {
+            const kelas = document.getElementById('selectKelas').value;
+            const mapel = getMapelAktif();
+            if (!kelas) { alert('Pilih kelas terlebih dahulu!'); return; }
+
+            if (confirm(`Yakin ingin mereset/mengosongkan seluruh data nilai dan absensi untuk kelas ${kelas} (${mapel})?`)) {
+                dbSiswa.forEach(s => {
+                    if (s.kelas === kelas && s.mapel === mapel) {
+                        const createEmptyDailyAbsen = (months) => {
+                            let res = {}; months.forEach(m => { res[m] = Array(31).fill('H'); }); return res;
+                        };
+                        s.absen_daily_s1 = createEmptyDailyAbsen(listBulanS1);
+                        s.absen_daily_s2 = createEmptyDailyAbsen(listBulanS2);
+                        s.h_s1 = Array(15).fill(0);
+                        s.h_s2 = Array(15).fill(0);
+                        s.u_s1 = Array(4).fill(0);
+                        s.u_s2 = Array(4).fill(0);
+                    }
+                });
+                localStorage.setItem('dbSiswaSMK_V114', JSON.stringify(dbSiswa));
+                muatDataSiswa();
+                showToast('Sukses! Data kelas ini berhasil direset ulang.');
+            }
+        }
+
+        function openTab(tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            const tabBtns = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove("active");
+            }
+
+            document.getElementById(tabName).classList.add("active");
+
+            if (tabName === 'Beranda') document.getElementById('btnTabBeranda').classList.add('active');
+            if (tabName === 'Absen') document.getElementById('btnTabAbsen').classList.add('active');
+            if (tabName === 'NilaiHarian') document.getElementById('btnTabNilaiHarian').classList.add('active');
+            if (tabName === 'NilaiUlangan') document.getElementById('btnTabNilaiUlangan').classList.add('active');
+
+            muatDataSiswa();
+        }
+
+        function exportToExcel() {
+            const kelas = document.getElementById('selectKelas').value;
+            const mapel = getMapelAktif();
+            const sem = document.getElementById('selectSemesterBeranda').value;
+
+            let dataExport = dbSiswa.filter(s => (!kelas || s.kelas === kelas) && (mapel === 'Umum' || s.mapel === mapel));
+            dataExport.sort((a, b) => a.kelas.localeCompare(b.kelas) || a.nama.localeCompare(b.nama));
+
+            if (dataExport.length === 0) { alert('Tidak ada data untuk diunduh!'); return; }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "No,Nama Siswa,Kelas,Mata Pelajaran,Semester,Izin,Sakit,Alpha,Absensi (%),Final Harian 1,Final Harian 2,Final Ulangan 1,Final Ulangan 2,Nilai Rapot\n";
+
+            dataExport.forEach((s, idx) => {
+                const totSem = countTotalAbsenSemester(s, sem);
+                const pctAbsen = hitungPersenAbsensi(totSem.iz, totSem.sk, totSem.al);
+                const hArr = sem === '1' ? (s.h_s1 || Array(15).fill(0)) : (s.h_s2 || Array(15).fill(0));
+                const f1H = calcRata(hArr.slice(0, 7));
+                const f2H = calcRata(hArr.slice(7, 15));
+                const uArr = sem === '1' ? (s.u_s1 || Array(4).fill(0)) : (s.u_s2 || Array(4).fill(0));
+                const f1U = calcRata(uArr.slice(0, 2));
+                const f2U = calcRata(uArr.slice(2, 4));
+                const rapot = hitungRapot(pctAbsen, f1H, f2H, f1U, f2U);
+
+                csvContent += `${idx + 1},"${s.nama}","${s.kelas}","${s.mapel}",Semester ${sem},${totSem.iz},${totSem.sk},${totSem.al},${pctAbsen}%,${f1H},${f2H},${f1U},${f2U},${rapot}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Nilai_${kelas || 'Semua'}_Semester_${sem}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('File Excel berhasil diunduh!');
+        }
+
+        initDatabase();
+        updateDropdownBulan();
+    </script>
+</body>
+</html>
