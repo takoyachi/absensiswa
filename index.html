@@ -133,11 +133,13 @@
             border-radius: 12px;
             margin-top: 16px;
             background: #fff;
+            position: relative;
         }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
-        th, td { border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 10px 12px; text-align: center; }
+        th, td { border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 10px 12px; text-align: center; background-color: #fff; }
         
+        /* Sticky Header & Columns */
         th { 
             background-color: #fafaf9; 
             color: #475569; 
@@ -145,7 +147,33 @@
             white-space: nowrap; 
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 2;
+        }
+
+        /* Freeze No Column */
+        th.sticky-no, td.sticky-no {
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            background-color: #fafaf9;
+            width: 50px;
+        }
+        td.sticky-no { background-color: #fff; }
+
+        /* Freeze Nama Column */
+        th.sticky-nama, td.sticky-nama {
+            position: sticky;
+            left: 50px; /* Lebar kolom No */
+            z-index: 3;
+            background-color: #fafaf9;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.03);
+        }
+        td.sticky-nama { background-color: #fff; }
+
+        /* Header intersections z-index fix */
+        th.sticky-no, th.sticky-nama {
+            z-index: 4;
+            background-color: #fafaf9 !important;
         }
 
         button {
@@ -198,9 +226,9 @@
 
         .text-left { text-align: left; white-space: nowrap; }
         
-        .bg-final { background-color: #eff6ff; font-weight: 700; color: #1e40af; }
-        .bg-final-2 { background-color: #f0fdf4; font-weight: 700; color: #166534; }
-        .bg-absen { background-color: #fefce8; color: #854d0e; }
+        .bg-final { background-color: #eff6ff !important; font-weight: 700; color: #1e40af; }
+        .bg-final-2 { background-color: #f0fdf4 !important; font-weight: 700; color: #166534; }
+        .bg-absen { background-color: #fefce8 !important; color: #854d0e; }
 
         .box-input-absen {
             width: 32px !important;
@@ -339,8 +367,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th rowspan="2">No</th>
-                        <th rowspan="2">Nama Siswa</th>
+                        <th rowspan="2" class="sticky-no">No</th>
+                        <th rowspan="2" class="sticky-nama">Nama Siswa</th>
                         <th rowspan="2">Kelas</th>
                         <th rowspan="2">Mapel</th>
                         <th rowspan="2">Semester</th>
@@ -421,8 +449,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama Siswa</th>
+                        <th class="sticky-no">No</th>
+                        <th class="sticky-nama">Nama Siswa</th>
                         <th>H1</th><th>H2</th><th>H3</th><th>H4</th><th>H5</th><th>H6</th><th>H7</th>
                         <th class="bg-final">Final 1 (H1-H7)</th>
                         <th>H8</th><th>H9</th><th>H10</th><th>H11</th><th>H12</th><th>H13</th><th>H14</th><th>H15</th>
@@ -450,8 +478,8 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nama Siswa</th>
+                        <th class="sticky-no">No</th>
+                        <th class="sticky-nama">Nama Siswa</th>
                         <th>Ulangan 1</th>
                         <th>Ulangan 2</th>
                         <th class="bg-final">Final 1</th>
@@ -481,7 +509,7 @@
             "Januari": 31, "Februari": 28, "Maret": 31, "April": 30, "Mei": 31, "Juni": 30
         };
 
-        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswaSMK_V119')) || [];
+        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswaSMK_V120')) || [];
 
         function showToast(message) {
             const toast = document.getElementById("toastNotif");
@@ -510,7 +538,7 @@
                         dbSiswa.push({ ...baseObj, mapel: 'Umum' });
                     }
                 });
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
             }
         }
 
@@ -584,7 +612,7 @@
                     if (!target.absen_daily_s2[bulan]) target.absen_daily_s2[bulan] = Array(31).fill('H');
                     target.absen_daily_s2[bulan][dayIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 showToast("Data absensi berhasil diubah & disimpan otomatis!");
             }
         }
@@ -601,7 +629,7 @@
                     if (!target.h_s2) target.h_s2 = Array(15).fill(0);
                     target.h_s2[tugasIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 showToast("Nilai harian berhasil diubah & disimpan otomatis!");
             }
         }
@@ -618,7 +646,7 @@
                     if (!target.u_s2) target.u_s2 = Array(4).fill(0);
                     target.u_s2[ulanganIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 showToast("Nilai ulangan berhasil diubah & disimpan otomatis!");
             }
         }
@@ -626,15 +654,15 @@
         function renderDailyHeader(bulan) {
             const totalDays = daysInMonthMap[bulan] || 31;
             let tr1 = `<tr>
-                <th rowspan="2">No</th>
-                <th rowspan="2">Nama Siswa</th>
+                <th rowspan="2" class="sticky-no">No</th>
+                <th rowspan="2" class="sticky-nama">Nama Siswa</th>
                 <th colspan="${totalDays}" style="background-color: #fef9c3; color: #854d0e;">Bulan ${bulan} (Tanggal 1 - ${totalDays})</th>
                 <th colspan="3">Total Absen</th>
                 <th rowspan="2">Aksi</th>
             </tr>`;
             let tr2 = '<tr>';
             for (let d = 1; d <= totalDays; d++) { tr2 += `<th style="width:28px;">${d}</th>`; }
-            tr2 += '<th>I</th><th>S</th><th>A</th></tr>';
+            tr2 += '<th>I</th><th>S</th><th>A</th><th></th></tr>';
             document.getElementById('theadAbsen').innerHTML = tr1 + tr2;
         }
 
@@ -699,8 +727,8 @@
 
                 htmlBeranda += `
                     <tr>
-                        <td>${idx + 1}</td>
-                        <td class="text-left">${s.nama}</td>
+                        <td class="sticky-no">${idx + 1}</td>
+                        <td class="sticky-nama text-left">${s.nama}</td>
                         <td>${s.kelas}</td>
                         <td>${s.mapel}</td>
                         <td>Semester ${semBeranda}</td>
@@ -729,8 +757,8 @@
 
                 htmlAbsen += `
                     <tr>
-                        <td>${idx + 1}</td>
-                        <td class="text-left">${s.nama}</td>
+                        <td class="sticky-no">${idx + 1}</td>
+                        <td class="sticky-nama text-left">${s.nama}</td>
                         ${dayCells}
                         <td>${mIz}</td><td>${mSk}</td><td>${mAl}</td>
                         <td>
@@ -753,8 +781,8 @@
 
                 htmlTugas += `
                     <tr>
-                        <td>${idx + 1}</td>
-                        <td class="text-left">${s.nama}</td>
+                        <td class="sticky-no">${idx + 1}</td>
+                        <td class="sticky-nama text-left">${s.nama}</td>
                         ${hInputs1}<td class="bg-final">${f1H}</td>
                         ${hInputs2}<td class="bg-final-2">${f2H}</td>
                     </tr>`;
@@ -765,8 +793,8 @@
 
                 htmlUlangan += `
                     <tr>
-                        <td>${idx + 1}</td>
-                        <td class="text-left">${s.nama}</td>
+                        <td class="sticky-no">${idx + 1}</td>
+                        <td class="sticky-nama text-left">${s.nama}</td>
                         <td><input type="number" class="input-score" value="${currentUArr[0] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 0, this)"></td>
                         <td><input type="number" class="input-score" value="${currentUArr[1] || 0}" min="0" max="100" oninput="updateUlanganCell('${s.nama.replace(/'/g, "\\'")}', '${s.kelas}', '${s.mapel}', 1, this)"></td>
                         <td class="bg-final">${f1U}</td>
@@ -810,7 +838,7 @@
                 dbSiswa.push({ ...baseObj, mapel: 'Umum' });
             }
 
-            localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+            localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
             inputNama.value = '';
             muatDataSiswa();
             showToast(`Sukses! Siswa "${namaBaru}" berhasil ditambahkan.`);
@@ -822,7 +850,7 @@
             if (namaBaru && namaBaru.trim() !== '' && namaBaru !== namaLama) {
                 namaBaru = toTitleCase(namaBaru.trim());
                 dbSiswa.forEach(s => { if (s.nama === namaLama && s.kelas === kelas) s.nama = namaBaru; });
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Nama siswa berhasil diubah.');
             }
@@ -832,14 +860,14 @@
             const kelas = document.getElementById('selectKelas').value;
             if (confirm(`Yakin ingin menghapus siswa "${nama}" dari kelas ${kelas}?`)) {
                 dbSiswa = dbSiswa.filter(s => !(s.nama === nama && s.kelas === kelas));
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Siswa berhasil dihapus.');
             }
         }
 
         function simpanSemuaData() {
-            localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+            localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
             muatDataSiswa();
             showToast('Sukses! Semua data berhasil disimpan dan diperbarui.');
         }
@@ -863,7 +891,7 @@
                         s.u_s2 = Array(4).fill(0);
                     }
                 });
-                localStorage.setItem('dbSiswaSMK_V119', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V120', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Data kelas ini berhasil direset ulang.');
             }
