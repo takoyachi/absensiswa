@@ -139,7 +139,7 @@
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
         th, td { border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 10px 12px; text-align: center; background-color: #fff; }
         
-        /* Sticky Header & Columns */
+        /* Sticky Header */
         th { 
             background-color: #fafaf9; 
             color: #475569; 
@@ -150,30 +150,30 @@
             z-index: 2;
         }
 
-        /* Freeze No Column */
+        /* Freeze No Column - Solid Background Fix */
         th.sticky-no, td.sticky-no {
             position: sticky;
             left: 0;
             z-index: 3;
-            background-color: #fafaf9;
             width: 50px;
+            background-color: #ffffff !important;
         }
-        td.sticky-no { background-color: #ffffff !important; }
+        th.sticky-no {
+            background-color: #fafaf9 !important;
+            z-index: 5;
+        }
 
-        /* Freeze Nama Column */
+        /* Freeze Nama Column - Solid Background Fix */
         th.sticky-nama, td.sticky-nama {
             position: sticky;
             left: 50px; /* Lebar kolom No */
             z-index: 3;
-            background-color: #fafaf9;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.03);
+            background-color: #ffffff !important;
+            box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.05);
         }
-        td.sticky-nama { background-color: #ffffff !important; }
-
-        /* Header intersections z-index fix */
-        th.sticky-no, th.sticky-nama {
-            z-index: 4;
+        th.sticky-nama {
             background-color: #fafaf9 !important;
+            z-index: 5;
         }
 
         button {
@@ -509,7 +509,7 @@
             "Januari": 31, "Februari": 28, "Maret": 31, "April": 30, "Mei": 31, "Juni": 30
         };
 
-        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswaSMK_V121')) || [];
+        let dbSiswa = JSON.parse(localStorage.getItem('dbSiswaSMK_V122')) || [];
 
         function showToast(message) {
             const toast = document.getElementById("toastNotif");
@@ -538,7 +538,7 @@
                         dbSiswa.push({ ...baseObj, mapel: 'Umum' });
                     }
                 });
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
             }
         }
 
@@ -612,7 +612,7 @@
                     if (!target.absen_daily_s2[bulan]) target.absen_daily_s2[bulan] = Array(31).fill('H');
                     target.absen_daily_s2[bulan][dayIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 showToast("Data absensi berhasil diubah & disimpan otomatis!");
             }
         }
@@ -629,7 +629,7 @@
                     if (!target.h_s2) target.h_s2 = Array(15).fill(0);
                     target.h_s2[tugasIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 showToast("Nilai harian berhasil diubah & disimpan otomatis!");
             }
         }
@@ -646,7 +646,7 @@
                     if (!target.u_s2) target.u_s2 = Array(4).fill(0);
                     target.u_s2[ulanganIndex] = val;
                 }
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 showToast("Nilai ulangan berhasil diubah & disimpan otomatis!");
             }
         }
@@ -838,7 +838,7 @@
                 dbSiswa.push({ ...baseObj, mapel: 'Umum' });
             }
 
-            localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+            localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
             inputNama.value = '';
             muatDataSiswa();
             showToast(`Sukses! Siswa "${namaBaru}" berhasil ditambahkan.`);
@@ -850,7 +850,7 @@
             if (namaBaru && namaBaru.trim() !== '' && namaBaru !== namaLama) {
                 namaBaru = toTitleCase(namaBaru.trim());
                 dbSiswa.forEach(s => { if (s.nama === namaLama && s.kelas === kelas) s.nama = namaBaru; });
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Nama siswa berhasil diubah.');
             }
@@ -860,14 +860,14 @@
             const kelas = document.getElementById('selectKelas').value;
             if (confirm(`Yakin ingin menghapus siswa "${nama}" dari kelas ${kelas}?`)) {
                 dbSiswa = dbSiswa.filter(s => !(s.nama === nama && s.kelas === kelas));
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Siswa berhasil dihapus.');
             }
         }
 
         function simpanSemuaData() {
-            localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+            localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
             muatDataSiswa();
             showToast('Sukses! Semua data berhasil disimpan dan diperbarui.');
         }
@@ -891,7 +891,7 @@
                         s.u_s2 = Array(4).fill(0);
                     }
                 });
-                localStorage.setItem('dbSiswaSMK_V121', JSON.stringify(dbSiswa));
+                localStorage.setItem('dbSiswaSMK_V122', JSON.stringify(dbSiswa));
                 muatDataSiswa();
                 showToast('Sukses! Data kelas ini berhasil direset ulang.');
             }
